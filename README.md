@@ -1,68 +1,160 @@
-# AI-Powered Blender Assistant 🤖
-
-**"Type what you want in Blender. Watch it happen."**
-
-An experimental Blender add-on (extension) that embeds a conversational AI panel directly inside the Blender 3D Viewport. The user types a natural language instruction, the add-on sends it to an AI provider (like Groq or Gemini), and the AI returns executable Python (`bpy`) code which is automatically run in the scene.
-
-> ***Current Status:** Phase 1 (MVP) in active development.*
-
+# 🤖 Cursor for Blender
+ 
+> Type what you want. Watch it happen.
+ 
+An AI-powered natural language assistant embedded directly inside Blender's interface. Describe what you want in plain English — the assistant translates it into Blender Python (`bpy`) code and executes it automatically.
+ 
+Think of it as **Cursor IDE, but for 3D.**
+ 
 ---
-
-## 🎯 Project Goal
-
-The primary goal of this add-on is to act as a translator between a user's mental model and Blender's intimidating Python API. 
-
-Instead of searching the internet for "how to add a light with Python in Blender", the user simply types:
-`"Add a red cube at the origin and put a point light above it"`
-
-The add-on handles the API communication, code extraction, and safe execution within Blender.
-
-## ⚠️ What This Is NOT (Scope Constraints)
-
-To keep this project feasible and stable, **Phase 1** is strictly defined by what it *does not* do:
-- ❌ **Not an Image-to-3D tool**: It generates native Blender objects via Python, it does not scan images.
-- ❌ **Not a multi-step Agent**: It does not plan complex workflows. It executes single instructions.
-- ❌ **Not context-aware (yet)**: The AI does not know what is currently in your scene.
-- ❌ **Not for complex geometry**: "Build a castle" will fail. "Add a plane and scale it by 5" will succeed.
-
-## 🛠️ Technical Architecture
-
-This add-on is built on a clean, scalable 5-file architecture:
-
-```text
-blender_ai_assistant/
-│
-├── __init__.py       # Standard add-on registration entry point
-├── properties.py     # Data model (Chat history, settings, API keys)
-├── operators.py      # Execution logic (Submit prompt, clear chat)
-├── panels.py         # UI rendering in the 3D Viewport N-Panel
-└── utils.py          # Helper functions (API requests, logging, code extraction)
+ 
+## ✨ What It Does
+ 
+Instead of this:
+```python
+bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
+mat = bpy.data.materials.new(name="Red")
+mat.diffuse_color = (1, 0, 0, 1)
+bpy.context.object.data.materials.append(mat)
 ```
-
-**Workflow:**
-1. User types a prompt.
-2. `operators.py` triggers an asynchronous API call to Groq (avoiding UI freezes).
-3. The AI returns a Markdown block containing `bpy` code.
-4. `utils.py` extracts the Python code from the Markdown.
-5. The code is executed using `exec()` within a safe `try/except` block.
-6. The UI updates to show success or the specific `SyntaxError`/`Exception` if the AI hallucinated.
-
-## 🚀 Installation (Developer Build)
-
-1. Download or clone this repository.
-2. Zip the `blender_ai_assistant` folder into an archive (e.g., `blender_ai_assistant.zip`).
-3. Open **Blender 4.0+**.
-4. Go to **Edit > Preferences > Add-ons**.
-5. Click **Install...** and select your zipped file.
-6. Enable the add-on by checking the box next to **3D View: AI Assistant module**.
-7. Open the 3D Viewport, press `N` to open the right sidebar, and select the **AI Assistant** tab.
-
-## 📄 Documentation
-
-For detailed information on the development phases, strict technical scope, and exact test cases required for the MVP, refer to the `docs/` folder:
-- `docs/PRD.md`: The master Product Requirements Document.
-- `docs/scope.md`: The strict stopping conditions for each development week.
-- `docs/week_1_implementation_plan.md`: The Week 1 UI architecture setup plan.
-
+ 
+You just type this:
+```
+Add a red cube at the origin
+```
+ 
 ---
-*Developed by Adarsh Soloman Banjare*
+ 
+## 📸 Preview
+ 
+![AI Assistant Panel](assets/preview.png)
+> *AI Assistant panel inside Blender 5.0's N-sidebar*
+ 
+---
+ 
+## 🚦 Project Status
+ 
+> 🚧 **Active Development** — Early Prototype Stage
+ 
+| Phase | Status | Description |
+|-------|--------|-------------|
+| Phase 1 — UI Panel | ✅ Complete | Sidebar chat panel inside Blender |
+| Phase 2 — API Connection | 🔄 In Progress | Connect to Groq / Claude / Gemini |
+| Phase 3 — Scene Generation | ⏳ Planned | Generate objects from natural language |
+| Phase 4 — Advanced Features | ⏳ Planned | Agents, image input, MCP integration |
+ 
+---
+ 
+## 🛠️ Installation
+ 
+**Requirements:**
+- Blender 4.0 or higher (tested on 5.0.1)
+- An API key from Groq, Gemini, or OpenRouter (free tiers available)
+ 
+**Steps:**
+ 
+1. Download the latest `.zip` from [Releases](https://github.com/adarshsoloman/cursor-for-blender/releases)
+2. Open Blender → `Edit` → `Preferences` → `Add-ons`
+3. Click `Install` and select the downloaded `.zip`
+4. Search for **"AI Assistant"** and enable it
+5. Press `N` in the 3D Viewport to open the sidebar
+6. Click the **AI Assistant** tab
+7. Go to `Settings` → enter your API key → select your provider
+ 
+---
+ 
+## 🎮 Usage
+ 
+1. Open the **AI Assistant** panel in the N-sidebar
+2. Type a natural language instruction in the input box
+3. Hit **Send**
+4. Watch Blender execute it automatically
+ 
+**Example prompts that work:**
+```
+Add a red cube at the origin
+Create a point light above the scene
+Delete all objects in the scene
+Add a UV sphere with 32 segments
+Move the selected object to position 2, 3, 0
+Set the background color to dark blue
+```
+ 
+---
+ 
+## 🔑 Supported AI Providers
+ 
+| Provider | Model | Cost | Speed |
+|----------|-------|------|-------|
+| **Groq** | Llama 3.3 70B | Free tier | ⚡ Fastest |
+| **Google Gemini** | Gemini 1.5 Flash | Free tier | 🟡 Fast |
+| **OpenRouter** | Various | Free tier available | 🟡 Medium |
+| **Ollama** | Llama 3 / CodeLlama | 100% Free (local) | 🔴 Depends on hardware |
+ 
+---
+ 
+## 📁 Project Structure
+ 
+```
+cursor-for-blender/
+│
+├── blender_ai_assistant/
+│   ├── __init__.py         # Add-on entry point, bl_info
+│   ├── properties.py       # Scene properties, chat history
+│   ├── operators.py        # Submit, Clear, Test Connection
+│   ├── panels.py           # UI panel and layout
+│   └── utils.py            # Helper functions
+│
+├── README.md
+└── LICENSE
+```
+ 
+---
+ 
+## 🗺️ Roadmap
+ 
+- [x] Sidebar chat panel UI
+- [x] Message history display
+- [x] Settings panel with API key input
+- [ ] Groq API integration
+- [ ] bpy code extraction and execution
+- [ ] Async API calls (non-blocking UI)
+- [ ] Error handling and retry logic
+- [ ] Multi-provider support
+- [ ] Scene context passing
+- [ ] Image input (multimodal)
+- [ ] Blender Extensions platform release
+ 
+---
+ 
+## 🤝 Contributing
+ 
+Contributions are very welcome. This project is in early stages and there's a lot to build.
+ 
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'feat: add your feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
+ 
+---
+ 
+## 📄 License
+ 
+This project is licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE) for details.
+ 
+In short: you can use, modify, and distribute this freely, but any derivative work must also remain open source under GPL. This is consistent with Blender's own license.
+ 
+---
+ 
+## 🙏 Acknowledgements
+ 
+- [Blender Foundation](https://www.blender.org/) — for building an incredible open source 3D tool
+- [Groq](https://groq.com/) — for blazing fast free inference
+- The Blender Python community — for years of `bpy` documentation and examples
+ 
+---
+ 
+<p align="center">
+  Built with 🧠 + ☕ by <a href="https://github.com/adarshsoloman">adarshsoloman</a>
+</p>
