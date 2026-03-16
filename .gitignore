@@ -1,0 +1,39 @@
+# Python / standard ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# Built zip files (we don't want binaries/builds in source control)
+*.zip
+blender_ai_assistant_v*.zip
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Blender specific temp files (if any)
+*.blend1
+*.blend2
+crash.txt
+
+# Project specific ignores
+PRD.md
+scope.md
+docs/
+ROADMAP/
