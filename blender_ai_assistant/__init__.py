@@ -1,7 +1,7 @@
 bl_info = {
     "name": "AI Assistant",
     "author": "Adarsh Soloman Banjare",
-    "version": (0, 2, 0),
+    "version": (1, 0, 0),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > AI Assistant",
     "description": "AI-powered natural language assistant for Blender",
@@ -9,7 +9,7 @@ bl_info = {
 }
 
 import bpy
-from . import properties, operators, panels, utils, api_client
+from . import properties, operators, panels, utils, api_client, code_executor
 
 def register():
     properties.register_properties()

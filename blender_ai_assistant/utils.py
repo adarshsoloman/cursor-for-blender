@@ -1,7 +1,7 @@
 import bpy
 import threading
 import queue
-from . import api_client
+from . import api_client, code_executor
 
 def log(message, level="INFO"):
     """
@@ -67,18 +67,46 @@ def queue_processor():
         scene.is_thinking = False
         
         if result["success"]:
-            # Append the AI's response to the chat history
-            msg = scene.ai_chat_history.add()
-            msg.role = "assistant"
-            msg.content = result["message"]
+            # 1. Try to extract the code
+            extraction = code_executor.extract_code(result["message"])
             
-            scene.last_exec_status = "success"
-            scene.last_exec_message = "API responded successfully."
+            if not extraction["success"]:
+                # The AI returned an ERROR string or bad formatting
+                msg = scene.ai_chat_history.add()
+                msg.role = "assistant"
+                msg.content = extraction["message"].replace("\n", "<NL>")
+                
+                scene.last_exec_status = "error"
+                scene.last_exec_message = "Generation failed"
+            else:
+                # 2. Add the actual extracted code to history so the user sees what is running
+                code = extraction["code"]
+                msg = scene.ai_chat_history.add()
+                msg.role = "assistant"
+                # Encode newlines to bypass Blender's StringProperty destruction
+                msg.content = f"```python<NL>{code}<NL>```".replace("\n", "<NL>")
+                
+                # 3. Execute it!
+                exec_result = code_executor.execute_code(code)
+                
+                if exec_result["success"]:
+                    scene.last_exec_status = "success"
+                    scene.last_exec_message = "Code executed successfully"
+                else:
+                    # Append the error as an AI message too
+                    err_msg = scene.ai_chat_history.add()
+                    err_msg.role = "assistant"
+                    err_message = f"Execution failed:\n{exec_result['message']}"
+                    err_msg.content = err_message.replace("\n", "<NL>")
+                    
+                    scene.last_exec_status = "error"
+                    scene.last_exec_message = "Code execution failed"
         else:
             # Show error
             msg = scene.ai_chat_history.add()
             msg.role = "assistant"
-            msg.content = f"Network Error: {result['message']}"
+            err_message = f"Network Error: {result['message']}"
+            msg.content = err_message.replace("\n", "<NL>")
             
             scene.last_exec_status = "error"
             scene.last_exec_message = "API request failed."

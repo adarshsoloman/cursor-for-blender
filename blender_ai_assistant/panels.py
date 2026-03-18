@@ -4,22 +4,34 @@ import bpy
 # Helper for Word Wrapping
 # ==============================================================================
 
-def draw_wrapped_text(layout, text, width=40):
-    lines = []
-    current_line = ""
-    words = text.split(" ")
+def draw_wrapped_text(layout, text, width=44):
+    """Draws multi-line text by splitting on newlines first, then wrapping each line."""
+    # First split by explicit newlines (decoded from <NL> token) so code blocks preserve shape
+    raw_lines = text.replace("<NL>", "\n").split('\n')
     
-    for word in words:
-        if len(current_line) + len(word) + 1 <= width:
-            current_line += (word + " ")
-        else:
-            lines.append(current_line.strip())
-            current_line = word + " "
-    if current_line:
-        lines.append(current_line.strip())
+    wrapped_lines = []
+    for raw_line in raw_lines:
+        if not raw_line.strip():
+            wrapped_lines.append("") # Keep empty lines for spacing
+            continue
+            
+        current_line = ""
+        words = raw_line.split(" ")
         
-    for line in lines:
-        layout.label(text=line)
+        for word in words:
+            if len(current_line) + len(word) + 1 <= width:
+                current_line += (word + " ")
+            else:
+                wrapped_lines.append(current_line.rstrip())
+                current_line = word + " "
+        if current_line:
+            wrapped_lines.append(current_line.rstrip())
+            
+    for line in wrapped_lines:
+        if line == "":
+            layout.separator(factor=0.5)
+        else:
+            layout.label(text=line)
 
 # ==============================================================================
 # UI Panel
@@ -134,7 +146,7 @@ def populate_dummy_data():
     for role, content in msgs:
         item = scene.ai_chat_history.add()
         item.role = role
-        item.content = content
+        item.content = content.replace("\n", "<NL>")
         
     scene.is_thinking = False
     scene.last_exec_status = "success"
