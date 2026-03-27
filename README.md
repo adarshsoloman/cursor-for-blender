@@ -1,5 +1,7 @@
 # Cursor for Blender
  
+> 🚀 **v1.0.0 is LIVE!** The core MVP is officially complete and stable.
+
 Look, Blender is amazing but it is arguably one of the hardest pieces of software to learn on the planet. I got so frustrated trying to remember exactly which nested menu hides the specific button I needed. And figuring out how to write the perfect `bpy` Python script just to do something basic like adding a red cube was driving me crazy.
  
 So I built this.
