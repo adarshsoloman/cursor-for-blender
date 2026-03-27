@@ -1,16 +1,16 @@
-# 🤖 Cursor for Blender
+# Cursor for Blender
  
-> Type what you want. Watch it happen.
+Look, Blender is amazing but it is arguably one of the hardest pieces of software to learn on the planet. I got so frustrated trying to remember exactly which nested menu hides the specific button I needed. And figuring out how to write the perfect `bpy` Python script just to do something basic like adding a red cube was driving me crazy.
  
-An AI-powered natural language assistant embedded directly inside Blender's interface. Describe what you want in plain English — the assistant translates it into Blender Python (`bpy`) code and executes it automatically.
+So I built this.
  
-Think of it as **Cursor IDE, but for 3D.**
+It is an AI assistant panel that sits right inside Blender. You type what you want in plain English, and it writes the Python code and executes it for you. It is basically Cursor IDE, but directly inside the 3D viewport.
  
----
+I am incredibly proud of getting this to work. This is my first real open source project and it actually functions the way I wanted it to. You type a prompt, it hits a free AI API, extracts the code, and manipulates your scene without freezing the UI. And yes, Ctrl+Z works if the AI messes up your scene.
  
-## ✨ What It Does
+## How it works
  
-Instead of this:
+Instead of searching the docs and writing this:
 ```python
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
 mat = bpy.data.materials.new(name="Red")
@@ -18,143 +18,74 @@ mat.diffuse_color = (1, 0, 0, 1)
 bpy.context.object.data.materials.append(mat)
 ```
  
-You just type this:
-```
-Add a red cube at the origin
-```
- 
----
- 
-## 📸 Preview
+You literally just open the side panel and type:
+`Add a red cube at the origin`
  
 ![AI Assistant Panel](assets/preview.png)
-> *AI Assistant panel inside Blender 5.0's N-sidebar*
+*(The UI panel lives in the N-sidebar)*
  
----
+## Installation
  
-## 🚦 Project Status
+You need Blender 4.0 or newer. I built and tested this on 4.0 and 5.0.
  
-> 🚧 **Active Development** — Early Prototype Stage
+1. Go to the [Releases](https://github.com/adarshsoloman/cursor-for-blender/releases) page and grab the latest `.zip` file.
+2. Open Blender. Go to Edit > Preferences > Add-ons.
+3. Click Install and pick the `.zip` you just downloaded.
+4. Check the box to enable "AI Assistant".
+5. Expand the add-on preferences right there and paste in your API key. (I highly recommend getting a free Groq API key, it is insanely fast).
+6. Press the `N` key in your 3D viewport to open the right sidebar. Click the AI Assistant tab.
  
-| Phase | Status | Description |
-|-------|--------|-------------|
-| Phase 1 — UI Panel | ✅ Complete | Sidebar chat panel inside Blender |
-| Phase 2 — API Connection | 🔄 In Progress | Connect to Groq / Claude / Gemini |
-| Phase 3 — Scene Generation | ⏳ Planned | Generate objects from natural language |
-| Phase 4 — Advanced Features | ⏳ Planned | Agents, image input, MCP integration |
+## Usage
  
----
+It is pretty straightforward. Open the panel, type what you want, and hit Send.
  
-## 🛠️ Installation
+Try things like:
+* "Add a red cube at the origin"
+* "Create a point light above the scene"
+* "Delete everything"
+* "Add a UV sphere with 32 segments"
+* "Move the selected object to position 2, 3, 0"
+* "Set the background color to dark blue"
  
-**Requirements:**
-- Blender 4.0 or higher (tested on 5.0.1)
-- An API key from Groq, Gemini, or OpenRouter (free tiers available)
+If the AI writes garbage code, it gets caught and prints the Python error in the chat panel instead of crashing Blender. If it actually places an object you hate, just hit Ctrl+Z to undo it.
  
-**Steps:**
+## Supported AI
  
-1. Download the latest `.zip` from [Releases](https://github.com/adarshsoloman/cursor-for-blender/releases)
-2. Open Blender → `Edit` → `Preferences` → `Add-ons`
-3. Click `Install` and select the downloaded `.zip`
-4. Search for **"AI Assistant"** and enable it
-5. Press `N` in the 3D Viewport to open the sidebar
-6. Click the **AI Assistant** tab
-7. Go to `Settings` → enter your API key → select your provider
+Right now I have it tuned to work best with Groq (specifically the Llama 3.3 70B model) because the free tier is extremely generous and it generates code in like two seconds. You can also use Google Gemini or OpenRouter if you prefer. Local Ollama support is planned so you can run it completely offline eventually.
  
----
+## Under the Hood
  
-## 🎮 Usage
+I kept the codebase as simple as I possibly could. No massive frameworks, no external dependencies to trick into Blender's Python folder. Just pure Blender Python using standard libraries.
  
-1. Open the **AI Assistant** panel in the N-sidebar
-2. Type a natural language instruction in the input box
-3. Hit **Send**
-4. Watch Blender execute it automatically
- 
-**Example prompts that work:**
-```
-Add a red cube at the origin
-Create a point light above the scene
-Delete all objects in the scene
-Add a UV sphere with 32 segments
-Move the selected object to position 2, 3, 0
-Set the background color to dark blue
+```text
+blender_ai_assistant/
+  __init__.py         # Registration and add-on info
+  properties.py       # Stores your chat history and API key safely
+  operators.py        # The logic for the Send and Clear buttons
+  panels.py           # Draws the actual UI
+  api_client.py       # Talks to the Groq/Gemini API
+  code_executor.py    # Sandboxes and runs the AI's Python code
+  utils.py            # Async threading so Blender does not freeze
 ```
  
----
+## What is Next
  
-## 🔑 Supported AI Providers
+The core system works right now. The MVP is officially done and stable.
  
-| Provider | Model | Cost | Speed |
-|----------|-------|------|-------|
-| **Groq** | Llama 3.3 70B | Free tier | ⚡ Fastest |
-| **Google Gemini** | Gemini 1.5 Flash | Free tier | 🟡 Fast |
-| **OpenRouter** | Various | Free tier available | 🟡 Medium |
-| **Ollama** | Llama 3 / CodeLlama | 100% Free (local) | 🔴 Depends on hardware |
+Next on my radar is actually giving the AI context. Right now it generates code blindly. I want to pass your scene data to the API so it knows what objects you have selected. I also want to add vision support so you can upload a reference image directly into the panel.
  
----
+## Want to help?
  
-## 📁 Project Structure
- 
-```
-cursor-for-blender/
-│
-├── blender_ai_assistant/
-│   ├── __init__.py         # Add-on entry point, bl_info
-│   ├── properties.py       # Scene properties, chat history
-│   ├── operators.py        # Submit, Clear, Test Connection
-│   ├── panels.py           # UI panel and layout
-│   └── utils.py            # Helper functions
-│
-├── README.md
-└── LICENSE
-```
- 
----
- 
-## 🗺️ Roadmap
- 
-- [x] Sidebar chat panel UI
-- [x] Message history display
-- [x] Settings panel with API key input
-- [ ] Groq API integration
-- [ ] bpy code extraction and execution
-- [ ] Async API calls (non-blocking UI)
-- [ ] Error handling and retry logic
-- [ ] Multi-provider support
-- [ ] Scene context passing
-- [ ] Image input (multimodal)
-- [ ] Blender Extensions platform release
- 
----
- 
-## 🤝 Contributing
- 
-Contributions are very welcome. This project is in early stages and there's a lot to build.
+Contributions are fully welcome. I built this solo from India, building in public for the first time, and I am still figuring a lot of things out. If you know how to make the code cleaner or want to build one of the roadmap features, please fork the repo and open a Pull Request.
  
 1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -m 'feat: add your feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a Pull Request
+2. Create your feature branch (`git checkout -b feature/cool-stuff`)
+3. Commit your changes
+4. Push to the branch
+5. Open a PR
  
----
+## License
  
-## 📄 License
+This is licensed under the GNU General Public License v3.0 to match Blender's own license. Do whatever you want with it, just keep it open source if you modify it.
  
-This project is licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE) for details.
- 
-In short: you can use, modify, and distribute this freely, but any derivative work must also remain open source under GPL. This is consistent with Blender's own license.
- 
----
- 
-## 🙏 Acknowledgements
- 
-- [Blender Foundation](https://www.blender.org/) — for building an incredible open source 3D tool
-- [Groq](https://groq.com/) — for blazing fast free inference
-- The Blender Python community — for years of `bpy` documentation and examples
- 
----
- 
-<p align="center">
-  Built with 🧠 + ☕ by <a href="https://github.com/adarshsoloman">adarshsoloman</a>
-</p>
+Built with 🧠 + ☕ by [adarshsoloman](https://github.com/adarshsoloman).
